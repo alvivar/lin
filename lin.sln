@@ -3,6 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "lin", "lin\lin.fsproj", "{FDA44880-F006-4051-9B57-6AF5F3CBEF43}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7E6EFEED-84CA-46BF-8A36-8FC7A79B0F46}"
+	ProjectSection(SolutionItems) = preProject
+		lin\stop-words_en.json = lin\stop-words_en.json
+		lin\stop-words_es.json = lin\stop-words_es.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
