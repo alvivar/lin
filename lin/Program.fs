@@ -1,5 +1,5 @@
 ﻿
-// LIN
+// Lin
 // Command tool that classifies links from files/urls!
 
 // By @MATNESIS
@@ -42,9 +42,9 @@ let wordCount text words =
     |> List.rev
 
 
-let htmlToWords html stop =
+let htmlToWords html ignore =
     let text = extractText html
-    removeWords text stop
+    removeWords text ignore
 
 
 // Returns all files and folders from files and folders.
@@ -84,10 +84,8 @@ let main argv =
     // href |> Seq.iter (fun x -> printfn "%s %s" <|| x)
 
 
-    let links =
-        href
-        |> Seq.map snd
-        // |> Seq.map (fun x -> snd x)
+    let links = href |> Seq.map snd
+                  // |> Seq.map (fun x -> snd x)
 
     // links |> Seq.iter (fun x -> printfn "%s" x)
 
