@@ -1,7 +1,8 @@
 ﻿
-// Bookmark Classifier!
+// LIN
+// Command tool that classifies links from files/urls!
 
-// @matnesis
+// By @MATNESIS
 // 2017/03/25 06:46 PM
 
 
