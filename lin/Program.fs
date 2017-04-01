@@ -1,6 +1,6 @@
 ﻿
 // Lin
-// Command tool that classifies links from files/urls!
+// Command line tool that analyzes text and links!
 
 // By @MATNESIS
 // 2017/03/25 06:46 PM

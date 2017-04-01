@@ -1,6 +1,6 @@
 # Lin
 
-**Command tool that classifies links from files/urls!**
+**Command line tool that analyzes text and links!**
 
 **Unfinished, work in progress!*
 
