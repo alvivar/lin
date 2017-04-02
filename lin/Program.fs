@@ -24,12 +24,16 @@
 //              x Extraction
 //              By category
 //              Export to categorized bookmark file
+//      Stop words
+//          Any json on the folder /stop will be applied as stop topWords
+//          By external file
 //      Improve words extraction (regex alternative?)
 
 
 open FSharp.Data
 open System.Text.RegularExpressions
 open System.Net
+
 
 
 // ==== Constants ======
@@ -40,6 +44,7 @@ By @MATNESIS
 
 let usage =
     "Usage: lin [--extract-keywords|--extract-links|--categorize-links|--export-bookmark] [source]"
+
 
 
 // ==== Command Line Parser ======
@@ -77,6 +82,7 @@ module CommandLineParser =
             exportLinksToCategorizedBookmark = false }
 
         parseCommandLineRec args defaultOptions
+
 
 
 // ==== Text Manipulation ======
@@ -118,7 +124,7 @@ let htmlToWords html ignore =
 
 
 
-// ==== Html Document Analysis ======
+// ==== HtmlDocument ======
 
 let extractLinkSeq (htmlDoc: HtmlDocument) =
     htmlDoc.Descendants ["a"]
@@ -141,10 +147,12 @@ let topWords (htmlDoc: HtmlDocument) ignore =
     wordCount
 
 
+
 // ==== Stop Words ======
 
 type StopEs = JsonProvider<"/Users/andresv/Projects/lin/lin/stop-words_es.json">
 type StopEn = JsonProvider<"/Users/andresv/Projects/lin/lin/stop-words_en.json">
+
 
 
 // ==== Main ======
