@@ -24,6 +24,7 @@
 //              x Extraction
 //              By category
 //              Export to categorized bookmark file
+//      Improve words extraction (regex alternative?)
 
 
 open FSharp.Data
