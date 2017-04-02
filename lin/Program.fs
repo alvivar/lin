@@ -1,9 +1,23 @@
 ﻿
-// Lin
-// Command line tool that analyzes text and links!
+//  Lin
+//  Command line tool that analyzes text and links!
 
-// By @MATNESIS
-// 2017/03/25 06:46 PM
+//  By @MATNESIS
+//  2017/03/25 06:46 PM
+
+
+//  To do
+//      Top words
+//      Source
+//          File
+//          URL
+//          Google search
+//              Text query to obligatory decent url query
+//          Links depthness
+//      Analysis
+//          Top words
+//          Links by category
+//              Export to categorized bookmark file
 
 
 open FSharp.Data
@@ -68,7 +82,7 @@ let main argv =
     // prinfn "%"
 
 
-    let html = HtmlDocument.Load("https://news.ycombinator.com/best")
+    let html = HtmlDocument.Load("https://www.google.com/search?q=\"trump\"")
 
     // printfn "%s" (extractText (html.ToString()))
 
