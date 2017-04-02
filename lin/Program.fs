@@ -35,7 +35,7 @@ open System.Net
 module CommandLineParser =
 
     type CommandLineOptions = {
-        topWords: bool
+        extractKeywords: bool
         categorizeLinks: bool
         extractLinks: bool
         exportLinksToCategorizedBookmark: bool }
@@ -43,8 +43,8 @@ module CommandLineParser =
     let rec parseCommandLineRec args optionsSoFar =
         match args with
         | [] -> optionsSoFar
-        | "--top-words" :: xs ->
-            parseCommandLineRec xs { optionsSoFar with topWords = true }
+        | "--extract-keywords" :: xs ->
+            parseCommandLineRec xs { optionsSoFar with extractKeywords = true }
         | "--extract-links" :: xs ->
             parseCommandLineRec xs { optionsSoFar with extractLinks = true }
         | "--categorize-links" :: xs ->
@@ -58,7 +58,7 @@ module CommandLineParser =
     let parseCommandLine args =
 
         let defaultOptions = {
-            topWords = false
+            extractKeywords = false
             extractLinks = false
             categorizeLinks = false
             exportLinksToCategorizedBookmark = false }
@@ -106,7 +106,7 @@ let htmlToWords html ignore =
 
 
 
-// ------- HTML Analysis ---
+// ------- Html Document Analysis ---
 
 let extractLinkSeq (htmlDoc: HtmlDocument) =
     htmlDoc.Descendants ["a"]
@@ -120,6 +120,14 @@ let extractNameLinkSeq (htmlDoc: HtmlDocument) =
     |> Seq.choose (fun x ->
         x.TryGetAttribute("href")
         |> Option.map (fun y -> x.InnerText(), y.Value()))
+
+
+// Returns a tuple list with the most used words and his count.
+let topWords (htmlDoc: HtmlDocument) ignore =
+    let words = htmlToWords (htmlDoc.ToString()) ignore
+    let wordCount = wordCount words (wordList words)
+    wordCount
+
 
 
 
@@ -136,12 +144,12 @@ type StopEn = JsonProvider<"/Users/andresv/Projects/lin/lin/stop-words_en.json">
 let main argv =
 
     // Header
-    printfn "%s" """LIN
-Command line tool for quick text and links analysis
+    printfn "%s" """
+Command line tool that analyzes text and links!
 By @MATNESIS
 
 Usage
-lin [source] [--top-words|--extract-links|--categorize-links|--export-bookmark]
+lin [source] [--extract-keywords|--extract-links|--categorize-links|--export-bookmark]
 """
 
 
@@ -149,34 +157,26 @@ lin [source] [--top-words|--extract-links|--categorize-links|--export-bookmark]
     let html = HtmlDocument.Load("https://www.kickstarter.com/projects/1068694633/narita-boy-the-retro-futuristic-pixel-game")
 
 
-    // Options from the Command line
+    // Command line options
     let options = CommandLineParser.parseCommandLine (List.ofArray argv) // i.e. ["--top-links"; "--export-bookmark"]
 
 
-    // -- Option -
-    // Extracting links
+    // Option: Extracting links
     if options.extractLinks then
         let links = extractLinkSeq html
         printfn "Links extracted: "
         links |> Seq.iteri (fun i x ->  printf "(%i %s)" i x)
 
 
-    // Stop words
-    let stopEs = List.ofArray <| (StopEs.GetSample()).Strings
-    let stopEn = List.ofArray <| (StopEn.GetSample()).Strings
-    // stopEs.Strings |> List.iter (fun x -> printf "%s " x)
-
-
-    // Top Words Option
-    if options.topWords
-    then
-        // Keywords
-        let words = htmlToWords (html.ToString()) (stopEs @ stopEn)
-        let topKeywords = wordCount words (wordList words)
-
-        topKeywords
+    // Option: Extracting keywords
+    if options.extractKeywords then
+        let stopEs = List.ofArray <| (StopEs.GetSample()).Strings
+        let stopEn = List.ofArray <| (StopEn.GetSample()).Strings
+        let keywords = topWords html (stopEs @ stopEn)
+        printfn "Keywords extracted: "
+        keywords
             |> List.distinct
-            |> List.iter (fun x -> printf "(%s, %d) " <|| x)
+            |> List.iter (fun x -> printfn "%s, %d" <|| x)
 
 
     0 // return an integer exit code
