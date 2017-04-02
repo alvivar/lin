@@ -2,6 +2,10 @@
 //  Lin
 //  Command line tool that analyzes text and links!
 
+//  Usage
+//  lin [source] --top-words --categorize-links --export-bookmark
+
+
 //  By @MATNESIS
 //  2017/03/25 06:46 PM
 
@@ -74,13 +78,57 @@ type StopEs = JsonProvider<"/Users/andresv/Projects/lin/lin/stop-words_es.json">
 type StopEn = JsonProvider<"/Users/andresv/Projects/lin/lin/stop-words_en.json">
 
 
+//   Command line parser
+module CommandLineParser =
+
+    type CommandLineOptions = {
+        topWords: bool
+        categorizeLinks: bool
+        exportLinksToCategorizedBookmark: bool }
+
+
+    let rec parseCommandLineRec args optionsSoFar =
+        match args with
+        | [] -> optionsSoFar
+        | "--top-words" :: xs ->
+            parseCommandLineRec xs { optionsSoFar with topWords = true }
+        | "--categorize-links" :: xs ->
+            parseCommandLineRec xs { optionsSoFar with categorizeLinks = true }
+        | "--export-bookmark" :: xs ->
+            parseCommandLineRec xs { optionsSoFar with exportLinksToCategorizedBookmark = true }
+        | x :: xs ->
+            printfn "Option '%s' is unrecognized" x
+            parseCommandLineRec xs optionsSoFar
+
+
+    let parseCommandLine args =
+
+        let defaultOptions = {
+            topWords = false;
+            categorizeLinks = false;
+            exportLinksToCategorizedBookmark = false }
+
+        parseCommandLineRec args defaultOptions
+
+
 [<EntryPoint>]
 let main argv =
 
-    printfn "%A" argv
+    // Header
+    printfn "%s" """Lin
+Command line tool for quick text and links analysis
+By @MATNESIS
+
+Usage
+lin [source] [--top-words|--categorize-links|--export-bookmark]
+"""
 
 
-    let html = HtmlDocument.Load("https://www.nytimes.com/2017/04/01/opinion/sunday/trump-needs-a-brain.html?_r=0")
+    let options = CommandLineParser.parseCommandLine (List.ofArray argv) // ["--top-links"; "--export-bookmark"]
+    printfn "%A" options
+
+
+    let html = HtmlDocument.Load("https://www.kickstarter.com/projects/1068694633/narita-boy-the-retro-futuristic-pixel-game")
     // printfn "%s" (extractText (html.ToString()))
 
 
@@ -112,9 +160,9 @@ let main argv =
     let words = htmlToWords (html.ToString()) (stopEs @ stopEn)
     let topKeywords = wordCount words (wordList words)
 
-    topKeywords
-        |> List.distinct
-        |> List.iter (fun x -> printf "(%s, %d) " <|| x)
+    // topKeywords
+    //     |> List.distinct
+    //     |> List.iter (fun x -> printf "(%s, %d) " <|| x)
 
 
     0 // return an integer exit code
