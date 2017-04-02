@@ -3,7 +3,7 @@
 //  Command line tool that analyzes text and links!
 
 //  Usage
-//  lin [source] --top-words --categorize-links --export-bookmark
+//  lin [source] [--top-words|--extract-links|--categorize-links|--export-bookmark]]
 
 
 //  By @MATNESIS
@@ -28,6 +28,46 @@ open FSharp.Data
 open System.Text.RegularExpressions
 open System.Net
 
+
+
+// ------- Command Line Parser ---
+
+module CommandLineParser =
+
+    type CommandLineOptions = {
+        topWords: bool
+        categorizeLinks: bool
+        extractLinks: bool
+        exportLinksToCategorizedBookmark: bool }
+
+    let rec parseCommandLineRec args optionsSoFar =
+        match args with
+        | [] -> optionsSoFar
+        | "--top-words" :: xs ->
+            parseCommandLineRec xs { optionsSoFar with topWords = true }
+        | "--extract-links" :: xs ->
+            parseCommandLineRec xs { optionsSoFar with extractLinks = true }
+        | "--categorize-links" :: xs ->
+            parseCommandLineRec xs { optionsSoFar with categorizeLinks = true }
+        | "--export-bookmark" :: xs ->
+            parseCommandLineRec xs { optionsSoFar with exportLinksToCategorizedBookmark = true }
+        | x :: xs ->
+            printfn "Option '%s' is unrecognized" x
+            parseCommandLineRec xs optionsSoFar
+
+    let parseCommandLine args =
+
+        let defaultOptions = {
+            topWords = false
+            extractLinks = false
+            categorizeLinks = false
+            exportLinksToCategorizedBookmark = false }
+
+        parseCommandLineRec args defaultOptions
+
+
+
+// ------- Text Manipulation ---
 
 let extractText html =
     let pattern = "(?is)<!--.*?--\s*>|<script.*?</script>|<style.*?</style>"
@@ -65,104 +105,97 @@ let htmlToWords html ignore =
     removeWords text ignore
 
 
+
+// ------- HTML Analysis ---
+
+let extractLinkSeq (htmlDoc: HtmlDocument) =
+    htmlDoc.Descendants ["a"]
+    |> Seq.choose (fun x ->
+        x.TryGetAttribute("href")
+        |> Option.map (fun y -> y.Value()))
+
+
+let extractNameLinkSeq (htmlDoc: HtmlDocument) =
+    htmlDoc.Descendants ["a"]
+    |> Seq.choose (fun x ->
+        x.TryGetAttribute("href")
+        |> Option.map (fun y -> x.InnerText(), y.Value()))
+
+
+
+// ------- Stop Words ---
+
+type StopEs = JsonProvider<"/Users/andresv/Projects/lin/lin/stop-words_es.json">
+type StopEn = JsonProvider<"/Users/andresv/Projects/lin/lin/stop-words_en.json">
+
+
+
+// ------- Main ---
+
+[<EntryPoint>]
+let main argv =
+
+    // Header
+    printfn "%s" """LIN
+Command line tool for quick text and links analysis
+By @MATNESIS
+
+Usage
+lin [source] [--top-words|--extract-links|--categorize-links|--export-bookmark]
+"""
+
+
+    // Main Source
+    let html = HtmlDocument.Load("https://www.kickstarter.com/projects/1068694633/narita-boy-the-retro-futuristic-pixel-game")
+
+
+    // Options from the Command line
+    let options = CommandLineParser.parseCommandLine (List.ofArray argv) // i.e. ["--top-links"; "--export-bookmark"]
+
+
+    // -- Option -
+    // Extracting links
+    if options.extractLinks then
+        let links = extractLinkSeq html
+        printfn "Links extracted: "
+        links |> Seq.iteri (fun i x ->  printf "(%i %s)" i x)
+
+
+    // Stop words
+    let stopEs = List.ofArray <| (StopEs.GetSample()).Strings
+    let stopEn = List.ofArray <| (StopEn.GetSample()).Strings
+    // stopEs.Strings |> List.iter (fun x -> printf "%s " x)
+
+
+    // Top Words Option
+    if options.topWords
+    then
+        // Keywords
+        let words = htmlToWords (html.ToString()) (stopEs @ stopEn)
+        let topKeywords = wordCount words (wordList words)
+
+        topKeywords
+            |> List.distinct
+            |> List.iter (fun x -> printf "(%s, %d) " <|| x)
+
+
+    0 // return an integer exit code
+
+
+
+(* Learning +1 *)
+
+
+// Equivalent
+    // let links = href |> Seq.map snd
+    //                  |> Seq.map (fun x -> snd x)
+
+// Prints a sequence of tuples
+    // href |> Seq.iter (fun x -> printfn "%s %s" <|| x)
+
 // Returns all files and folders from files and folders.
 // let rec allFiles dirs =
 //     match dirs with
 //     | dirs when Seq.isEmpty dirs -> Seq.empty
 //     | _ -> seq { yield! dirs |> Seq.collect Directory.EnumerateFiles
 //                  yield! dirs |> Seq.collect Directory.EnumerateDirectories |> allFiles }
-
-
-// Stop words
-type StopEs = JsonProvider<"/Users/andresv/Projects/lin/lin/stop-words_es.json">
-type StopEn = JsonProvider<"/Users/andresv/Projects/lin/lin/stop-words_en.json">
-
-
-//   Command line parser
-module CommandLineParser =
-
-    type CommandLineOptions = {
-        topWords: bool
-        categorizeLinks: bool
-        exportLinksToCategorizedBookmark: bool }
-
-
-    let rec parseCommandLineRec args optionsSoFar =
-        match args with
-        | [] -> optionsSoFar
-        | "--top-words" :: xs ->
-            parseCommandLineRec xs { optionsSoFar with topWords = true }
-        | "--categorize-links" :: xs ->
-            parseCommandLineRec xs { optionsSoFar with categorizeLinks = true }
-        | "--export-bookmark" :: xs ->
-            parseCommandLineRec xs { optionsSoFar with exportLinksToCategorizedBookmark = true }
-        | x :: xs ->
-            printfn "Option '%s' is unrecognized" x
-            parseCommandLineRec xs optionsSoFar
-
-
-    let parseCommandLine args =
-
-        let defaultOptions = {
-            topWords = false;
-            categorizeLinks = false;
-            exportLinksToCategorizedBookmark = false }
-
-        parseCommandLineRec args defaultOptions
-
-
-[<EntryPoint>]
-let main argv =
-
-    // Header
-    printfn "%s" """Lin
-Command line tool for quick text and links analysis
-By @MATNESIS
-
-Usage
-lin [source] [--top-words|--categorize-links|--export-bookmark]
-"""
-
-
-    let options = CommandLineParser.parseCommandLine (List.ofArray argv) // ["--top-links"; "--export-bookmark"]
-    printfn "%A" options
-
-
-    let html = HtmlDocument.Load("https://www.kickstarter.com/projects/1068694633/narita-boy-the-retro-futuristic-pixel-game")
-    // printfn "%s" (extractText (html.ToString()))
-
-
-    // A tuple of names and links
-    let href =
-        html.Descendants ["a"]
-        |> Seq.choose (fun x ->
-            x.TryGetAttribute("href")
-            |> Option.map (fun a -> x.InnerText(), a.Value()))
-
-    // Prints a sequence of tuples
-    // href |> Seq.iter (fun x -> printfn "%s %s" <|| x)
-
-
-    let links = href |> Seq.map snd
-                  // |> Seq.map (fun x -> snd x)
-
-    // links |> Seq.iter (fun x -> printfn "%s" x)
-
-
-    // Stop words
-    let stopEs = List.ofArray <| (StopEs.GetSample()).Strings
-    let stopEn = List.ofArray <| (StopEn.GetSample()).Strings
-
-    // stopEs.Strings |> List.iter (fun x -> printf "%s " x)
-
-
-    // Keywords
-    let words = htmlToWords (html.ToString()) (stopEs @ stopEn)
-    let topKeywords = wordCount words (wordList words)
-
-    // topKeywords
-    //     |> List.distinct
-    //     |> List.iter (fun x -> printf "(%s, %d) " <|| x)
-
-
-    0 // return an integer exit code
