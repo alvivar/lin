@@ -45,13 +45,13 @@ let rec removeWords text words =
     | [] -> text
 
 
-// Returns a list of (word, count) tuples for any word in the text.
+// Returns a list of (word, count) tuples for any word in the text. Sorted by
+// count, descendent.
 let wordCount text words =
     [ for x in words do
         let count = Regex(@"\b" + Regex.Escape(x) + @"\b").Matches(text).Count
         if count > 1
-        then yield (x, count)
-    ]
+        then yield (x, count) ]
     |> List.sortBy (fun (_, x) -> x)
     |> List.rev
 
@@ -82,7 +82,7 @@ let main argv =
     // prinfn "%"
 
 
-    let html = HtmlDocument.Load("https://www.google.com/search?q=\"trump\"")
+    let html = HtmlDocument.Load("https://www.nytimes.com/2017/04/01/opinion/sunday/trump-needs-a-brain.html?_r=0")
 
     // printfn "%s" (extractText (html.ToString()))
 
