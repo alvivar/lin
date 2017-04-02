@@ -1,9 +1,9 @@
 ﻿
 //  Lin
-//  Command line tool that analyzes text and links!
+//  Command line tool that analyzes text and links from files/urls!
 
-//  Usage
-//  lin [source] [--top-words|--extract-links|--categorize-links|--export-bookmark]]
+//  Usage: lin [--extract-keywords|--extract-links|--categorize-links|--export-bookmark] [source]
+//  The source can be a text/html file or url.
 
 
 //  By @MATNESIS
@@ -26,7 +26,6 @@
 //              Export to categorized bookmark file
 
 
-
 open FSharp.Data
 open System.Text.RegularExpressions
 open System.Net
@@ -34,13 +33,12 @@ open System.Net
 
 // ==== Constants ======
 
-let header = """
-Command line tool that analyzes text and links!
+let header = """Command line tool that analyzes text and links from files/urls!
 By @MATNESIS
 """
 
 let usage =
-    "Usage: lin [source] [--extract-keywords|--extract-links|--categorize-links|--export-bookmark]"
+    "Usage: lin [--extract-keywords|--extract-links|--categorize-links|--export-bookmark] [source]"
 
 
 // ==== Command Line Parser ======
@@ -164,9 +162,9 @@ let main argv =
     let html = HtmlDocument.Load("https://www.kickstarter.com/projects/1068694633/narita-boy-the-retro-futuristic-pixel-game")
 
 
-    // ==== Options execution ======
+    // ==== Options Execution ======
 
-    // Parsing from the Command line
+    // Parsing the the Command line
     let options = CommandLineParser.parseCommandLine (List.ofArray argv) // i.e. ["--top-links"; "--export-bookmark"]
 
     // Option: Extracting links
