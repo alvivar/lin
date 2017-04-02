@@ -11,23 +11,19 @@
 
 
 //  To do
-//      x Command line parser
-//      Source
-//          File
-//          URL
-//          Google search
-//              Text query to obligatory decent url query
-//          Links depthness?
-//      Analysis
-//          x Keywords
-//          Links
-//              x Extraction
-//              By category
-//              Export to categorized bookmark file
-//      Stop words
-//          Any json on the folder /stop will be applied as stop topWords
-//          By external file
+//      File / URL source
+//      Google search source
+//      Google query to decent url query
+//      Links By category
+//      Export links to categorized bookmark file
+//      Source Links depthness?
+//      Any json on the folder /stop will be applied as stop topWords
+//      Stop words by external file
 //      Improve words extraction (regex alternative?)
+//      x Links extraction
+//      x Keywords extraction
+//      x Command line parser
+//      x Regex text extraction from html
 
 
 open FSharp.Data
@@ -179,15 +175,18 @@ let main argv =
     // Option: Extracting links
     if options.extractLinks then
         let links = extractLinkSeq html
+        printfn ""
         links
             |> Seq.distinct
             |> Seq.iteri (fun i x ->  printfn "%i %s" i x)
+        printfn ""
 
     // Option: Extracting keywords
     if options.extractKeywords then
         let stopEs = List.ofArray <| (StopEs.GetSample()).Strings
         let stopEn = List.ofArray <| (StopEn.GetSample()).Strings
         let keywords = topWords html (stopEs @ stopEn)
+        printfn ""
         keywords
             |> List.distinct
             |> List.iter (fun x -> printf "%s %d \t" <|| x)
