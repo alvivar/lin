@@ -79,11 +79,8 @@ let main argv =
 
     printfn "%A" argv
 
-    // prinfn "%"
-
 
     let html = HtmlDocument.Load("https://www.nytimes.com/2017/04/01/opinion/sunday/trump-needs-a-brain.html?_r=0")
-
     // printfn "%s" (extractText (html.ToString()))
 
 
