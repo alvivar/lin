@@ -16,9 +16,12 @@
 //      Google query to decent url query
 //      Links By category
 //      Export links to categorized bookmark file
-//      Source Links depthness?
+//      Css keywords as stop words
+//      Bug when the last argument is not a source
 //      Any json on the folder /stop will be applied as stop topWords
+//      Bug with auth exception with https://nacion.com as source
 //      Stop words by external file
+//      Source Links depthness?
 //      Improve words extraction (regex alternative?)
 //      x Links extraction
 //      x Keywords extraction
@@ -48,21 +51,23 @@ let usage =
 module CommandLineParser =
 
     type CommandLineOptions = {
+        source: string
         extractKeywords: bool
-        categorizeLinks: bool
         extractLinks: bool
+        categorizeLinks: bool
         exportLinksToCategorizedBookmark: bool }
 
     let rec parseCommandLineRec args optionsSoFar =
         match args with
         | [] -> optionsSoFar
-        | "--extract-keywords" :: xs ->
+        | [last] -> parseCommandLineRec [] { optionsSoFar with source = last }
+        | "-ek" :: xs ->
             parseCommandLineRec xs { optionsSoFar with extractKeywords = true }
-        | "--extract-links" :: xs ->
+        | "-el" :: xs ->
             parseCommandLineRec xs { optionsSoFar with extractLinks = true }
-        | "--categorize-links" :: xs ->
+        | "-cl" :: xs ->
             parseCommandLineRec xs { optionsSoFar with categorizeLinks = true }
-        | "--export-bookmark" :: xs ->
+        | "-ecl" :: xs ->
             parseCommandLineRec xs { optionsSoFar with exportLinksToCategorizedBookmark = true }
         | x :: xs ->
             printfn "lin: Illegal option '%s'" x
@@ -72,6 +77,7 @@ module CommandLineParser =
     let parseCommandLine args =
 
         let defaultOptions = {
+            source = "http://google.com?q=\"matnesis\"" // Me
             extractKeywords = false
             extractLinks = false
             categorizeLinks = false
@@ -163,14 +169,15 @@ let main argv =
         printfn "%s" usage
 
 
-    // Main Source should be always the first argument
-    let html = HtmlDocument.Load("https://www.kickstarter.com/projects/1068694633/narita-boy-the-retro-futuristic-pixel-game")
+    // Parsing the the Command line
+    let options = CommandLineParser.parseCommandLine (List.ofArray argv) // i.e. ["--top-links"; "--export-bookmark"]
+
+
+    // Main Source is always the last argument
+    let html = HtmlDocument.Load(options.source)
 
 
     // ==== Options Execution ======
-
-    // Parsing the the Command line
-    let options = CommandLineParser.parseCommandLine (List.ofArray argv) // i.e. ["--top-links"; "--export-bookmark"]
 
     // Option: Extracting links
     if options.extractLinks then
@@ -179,7 +186,6 @@ let main argv =
         links
             |> Seq.distinct
             |> Seq.iteri (fun i x ->  printfn "%i %s" i x)
-        printfn ""
 
     // Option: Extracting keywords
     if options.extractKeywords then
