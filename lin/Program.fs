@@ -11,18 +11,18 @@
 
 
 //  To do
-//      File / URL source
-//      Google search source
-//      Google query to decent url query
-//      Links By category
+//      Links by category
 //      Export links to categorized bookmark file
 //      Css keywords as stop words
+//      Google search source
+//      Google query to decent url query
 //      Bug when the last argument is not a source
 //      Any json on the folder /stop will be applied as stop topWords
 //      Bug with auth exception with https://nacion.com as source
 //      Stop words by external file
 //      Source Links depthness?
 //      Improve words extraction (regex alternative?)
+//      x File / URL source
 //      x Links extraction
 //      x Keywords extraction
 //      x Command line parser
