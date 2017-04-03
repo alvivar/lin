@@ -46,7 +46,7 @@ let usage =
 
 
 
-// ==== Command Line Parser ======
+// ==== Command Line ======
 
 module CommandLineParser =
 
@@ -57,24 +57,24 @@ module CommandLineParser =
         categorizeLinks: bool
         exportLinksToCategorizedBookmark: bool }
 
-    let rec parseCommandLineRec args optionsSoFar =
+    let rec parseRec args optionsSoFar =
         match args with
         | [] -> optionsSoFar
-        | [last] -> parseCommandLineRec [] { optionsSoFar with source = last }
+        | [last] -> parseRec [] { optionsSoFar with source = last }
         | "-ek" :: xs ->
-            parseCommandLineRec xs { optionsSoFar with extractKeywords = true }
+            parseRec xs { optionsSoFar with extractKeywords = true }
         | "-el" :: xs ->
-            parseCommandLineRec xs { optionsSoFar with extractLinks = true }
+            parseRec xs { optionsSoFar with extractLinks = true }
         | "-cl" :: xs ->
-            parseCommandLineRec xs { optionsSoFar with categorizeLinks = true }
+            parseRec xs { optionsSoFar with categorizeLinks = true }
         | "-ecl" :: xs ->
-            parseCommandLineRec xs { optionsSoFar with exportLinksToCategorizedBookmark = true }
+            parseRec xs { optionsSoFar with exportLinksToCategorizedBookmark = true }
         | x :: xs ->
             printfn "lin: Illegal option '%s'" x
             printfn "%s" usage
-            parseCommandLineRec xs optionsSoFar
+            parseRec xs optionsSoFar
 
-    let parseCommandLine args =
+    let parse args =
 
         let defaultOptions = {
             source = "http://google.com?q=\"matnesis\"" // Me
@@ -83,7 +83,7 @@ module CommandLineParser =
             categorizeLinks = false
             exportLinksToCategorizedBookmark = false }
 
-        parseCommandLineRec args defaultOptions
+        parseRec args defaultOptions
 
 
 
@@ -170,10 +170,10 @@ let main argv =
 
 
     // Parsing the the Command line
-    let options = CommandLineParser.parseCommandLine (List.ofArray argv) // i.e. ["--top-links"; "--export-bookmark"]
+    let options = CommandLineParser.parse (List.ofArray argv) // i.e. ["--top-links"; "--export-bookmark"]
 
 
-    // Main Source is always the last argument
+    // The source is the last argument
     let html = HtmlDocument.Load(options.source)
 
 
@@ -195,7 +195,7 @@ let main argv =
         printfn ""
         keywords
             |> List.distinct
-            |> List.iter (fun x -> printf "%s %d \t" <|| x)
+            |> List.iter (fun x -> printf "%s %d\t" <|| x)
         printfn ""
 
 
